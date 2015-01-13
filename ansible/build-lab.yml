@@ -1,0 +1,10 @@
+---
+
+- include: statsd.yml
+  tags: [statsd]
+
+- hosts: all
+  gather_facts: false
+  tasks:
+    - debug: msg='Please set ANSIBLE_TAGS=comma,separated,list to run'
+      tags: [NONE_SELECTED]

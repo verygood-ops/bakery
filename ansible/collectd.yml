@@ -3,8 +3,8 @@
   sudo: yes
   vars:
     collectd_git_repo: https://github.com/collectd/collectd.git
-    collectd_version: 3ed71d2774fcacdf0c88b3a6d81bd826a6893b32
-
+    collectd_revision: 3ed71d2774fcacdf0c88b3a6d81bd826a6893b32
+    collectd_version: 5.4.1
   pre_tasks:
     - name: Ubuntu | Install dependencies
       when: ansible_os_family == 'Debian'
@@ -98,18 +98,18 @@
       git:
         repo: "{{ collectd_git_repo }}"
         dest: "/tmp/collectd"
-        version: "{{ collectd_version}}"
+        version: "{{ collectd_revision }}"
 
     - name: build.sh
       shell: ./build.sh chdir=/tmp/collectd creates/tmp/collectd/configure
 
     - name: Configure
       shell: |
-        ./configure --prefix=/opt           \
-                    --disable-static        \
-                    --without-listatgrab    \
-                    --without-libhal        \
+        ./configure --prefix=/opt/collectd   \
+                    --without-listatgrab     \
+                    --without-libhal         \
                     --without-included-ltdl
+#                    --disable-static         \
 #                    --enable-all-plugins    \
 #                    --disable-aquaero       \
 #                    --disable-barometer       \
@@ -143,7 +143,9 @@
       args:
         chdir: /tmp/collectd
 
-# fpm -s dir -t deb -n collectd-ot -v 5.4.1'
+    # the way collectd works is that you should compile it with all plugins
+    # possible to get them enabled, but only pull the dependency if you need
+    # it to enable it
     - name: Make fpm
       shell:
         fpm -s dir -t deb
@@ -164,7 +166,7 @@
             -d libyajl-dev
             -d python-dev
             -m mahmoud@balancedpayments.com
-            --version '5.4.1-0balanced'
+            --version '{{ collectd_version }}-balanced-1'
             --provides balanced-collectd
             --vendor dev@balancedpayments.com
             --license MIT/BSD

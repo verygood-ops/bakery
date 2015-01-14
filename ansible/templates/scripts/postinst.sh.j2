@@ -1,0 +1,14 @@
+#!/bin/sh
+# prerm script for {{ app_name }}
+
+set -e
+
+if [ ! -f {{ app_config }} ] ; then
+  cp {{ app_config_example }} {{ app_config }}
+  echo "Adding default config"
+fi
+
+start {{ app_name }}
+
+# Exit cleanly
+exit 0

@@ -26,9 +26,11 @@ Vagrant.configure(2) do |config|
     # noinspection RubyResolve
     ubuntu.vm.provision :ansible do |ansible|
       # https://docs.vagrantup.com/v2/provisioning/ansible.html
-      ansible.playbook = 'ansible/build-lab.yml'
+      ansible.playbook = "ansible/#{ENV['PLAY']}.yml"
       ansible.host_key_checking = false
-      ansible.tags = (ENV['ANSIBLE_TAGS'] || 'NONE_SELECTED').split(',')
+      if ENV['ANSIBLE_TAGS']
+        ansible.tags = ENV['ANSIBLE_TAGS'].split(',')
+      end
       ansible.extra_vars = {
           :local_bridge_network => BRIDGE_NETWORK,
           :local_bridge_netmask => BRIDGE_NETMASK,

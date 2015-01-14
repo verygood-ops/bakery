@@ -16,15 +16,10 @@
           maxConnections: 10
           host: "internal-metrics.vandelay.io"
           port: 8125
-  roles:
-    - role: statsd
-
-  tasks:
-    - meta: flush_handlers
-
+  pre_tasks:
     - name: Ubuntu | Install dependencies
       when: ansible_os_family == 'Debian'
-      apt: name="{{ item }}" state=present
+      apt: name="{{ item }}" state=present update_cache=yes cache_valid_time=1200
       with_items:
         - git-core
         - curl
@@ -35,7 +30,14 @@
         - gcc
 
     - name: Install fpm gem
-      gem: name=fpm state=latest
+      gem: name=fpm state=present user_install=no
+
+  roles:
+    - statsd
+
+  tasks:
+
+    - meta: flush_handlers
 
     - name: Stop running statsd
       service: name=statsd state=stopped
@@ -48,28 +50,24 @@
       command: mv /etc/init/statsd.conf /opt/statsd/statsd
       when: statsd_conf.stat.exists
 
+#    - name: Render pre/post/rm scripts
+#      template: src=default
+#      when: statsd_conf.stat.exists
+
     - name: Make fpm
       shell:
         fpm -s dir -t deb
             -p /vagrant/packages
             -n balanced-statsd-relayer
-            --provides balanced-statsd-relayer
             -m mahmoud@balancedpayments.com
+            -d 'nodejs >= 0.10.0'
+            --version '1.0.0'
+            --provides balanced-statsd-relayer
             --vendor dev@balancedpayments.com
             --license MIT/BSD
-            -d 'nodejs >= 0.10.0'
             --url 'https://github.com/balanced-ops'
             --deb-upstart /opt/statsd/statsd
             --description 'Balanced modification of statsd that allows a
                            local udp server with a tcp relay to our internal
                            metrics service'
             /opt/statsd
-
-
-#    -t OUTPUT_TYPE                the type of package you want to create (deb, rpm, solaris, etc)
-#    -s INPUT_TYPE                 the package type to use as input (gem, rpm, python, etc)
-#    -C CHDIR                      Change directory to here before searching for files
-#    --prefix PREFIX               A path to prefix files with when building the target package. This may be necessary for all input packages. For example, the 'gem' type will prefix with your gem directory automatically.
-#    -p, --package OUTPUT          The package file path to output.
-#    -f, --force                   Force output even if it will overwrite an existing file (default: false)
-#    -n, --name NAME               The name to give to the package

@@ -1,0 +1,11 @@
+#!/bin/sh
+# prerm script for {{ app_name }}
+
+set -e
+
+# Stop any running process
+stop {{ app_name }} | true
+{{  app_prerm_cmds }}
+
+# Exit cleanly
+exit 0

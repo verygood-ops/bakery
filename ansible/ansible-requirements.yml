@@ -1,5 +1,5 @@
 ---
 
 - src: https://github.com/balanced-ops/Stouts.statsd.git
-  version: ebca293523b4beed5b68ac56ba04cf86744c7f51
+  version: eb3d7acc524402dd1689f97c5ebac830f11f663a
   name: statsd

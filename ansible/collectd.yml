@@ -1,0 +1,167 @@
+---
+- hosts: all
+  sudo: yes
+  vars:
+    collectd_git_repo: https://github.com/collectd/collectd.git
+    collectd_version: 7af18f5f02114f39f6c546447e9bf05adf009b00
+
+  pre_tasks:
+    - name: Ubuntu | Install dependencies
+      when: ansible_os_family == 'Debian'
+      apt: name="{{ item }}" state=present update_cache=yes cache_valid_time=86400
+      with_items:
+        - git-core
+        - curl
+        - build-essential
+        - openssl
+        - libssl-dev
+        - ruby-dev
+        - gcc
+
+    - name: Install fpm gem
+      gem: name=fpm state=present user_install=no
+
+  tasks:
+
+    - meta: flush_handlers
+
+#    - name: Render pre/post/rm scripts
+#      template: src=default
+#      when: statsd_conf.stat.exists
+
+    - name: Ubuntu | Install collectd build dependencies
+      when: ansible_os_family == 'Debian'
+      apt: name="{{ item }}" state=present
+      with_items:
+        - bison
+        - flex
+        - automake
+        - autoconf
+        - autotools-dev
+        - libltdl-dev
+        - pkg-config
+
+    - name: Ubuntu | Install collectd plugin dependencies
+      when: ansible_os_family == 'Debian'
+      apt: name="{{ item }}" state=present
+      with_items:
+        - javahelper   # really?
+        - default-jdk
+        - linux-libc-dev
+        - perl-modules
+        - libperl-dev
+        - libatasmart4
+        - iptables-dev
+        - libcurl4-gnutls-dev
+        - libdbi-dev
+        - libesmtp-dev
+        - libganglia1-dev
+        - libgcrypt11-dev
+        - libglib2.0-dev
+        - liblvm2-dev
+        - libmemcached-dev
+        - libmodbus-dev
+        - libmnl-dev
+        - libmysqlclient-dev
+        - libnotify-dev
+        - libopenipmi-dev
+        - liboping-dev
+        - libow-dev
+        - libpcap-dev
+        - libpq-dev
+        - librabbitmq-dev
+        - librrd-dev
+        - libsensors4-dev
+        - libtokyocabinet-dev
+        - libtokyotyrant-dev
+        - libvirt-dev
+        - libxml2-dev
+        - libyajl-dev
+        - protobuf-c-compiler
+        - python-dev
+        - libhiredis-dev
+        - liblvm2-dev
+        - librdkafka-dev
+        - libprotobuf-c0-dev
+        - libvarnishapi-dev
+
+    - name: Checkout collectd source
+      git:
+        repo: "{{ collectd_git_repo }}"
+        dest: "/tmp/collectd"
+        version: "{{ collectd_version}}"
+
+    - name: build.sh
+      shell: ./build.sh chdir=/tmp/collectd creates/tmp/collectd/configure
+
+    - name: Configure
+      shell: |
+        ./configure --prefix=/opt           \
+                    --disable-static        \
+                    --without-listatgrab    \
+                    --without-libhal        \
+                    --without-included-ltdl \
+                    --disable-apple_sensors \
+                    --enable-all-plugins    \
+                    --with-perl-bindings='INSTALLDIRS=vendor'
+      args:
+        chdir: /tmp/collectd
+
+    - name: Create target directory
+      file: path=/opt/collectd state=directory
+
+    - name: Make install
+      shell: make install DEST=/opt/collectd
+      args:
+        chdir: /tmp/collectd
+
+# fpm -s dir -t deb -n collectd-ot -v 5.4.1'
+    - name: Make fpm
+      shell:
+        fpm -s dir -t deb
+            -p /vagrant/packages
+            -n balanced-collectd
+            -d flex
+            -d autotools-dev
+            -d libltdl-dev
+            -d pkg-config
+            -d iptables-dev
+            -d javahelper
+            -d libcurl4-gnutls-dev
+            -d libdbi-dev
+            -d libesmtp-dev
+            -d libganglia1-dev
+            -d libgcrypt11-dev
+            -d libglib2.0-dev
+            -d liblvm2-dev
+            -d libmemcached-dev
+            -d libmodbus-dev
+            -d libmnl-dev
+            -d libmysqlclient-dev
+            -d libnotify-dev
+            -d libopenipmi-dev
+            -d liboping-dev
+            -d libow-dev
+            -d libpcap-dev
+            -d libperl-dev
+            -d libpq-dev
+            -d librabbitmq-dev
+            -d librrd-dev
+            -d libsensors4-dev
+            -d libtokyocabinet-dev
+            -d libtokyotyrant-dev
+            -d libvirt-dev
+            -d libxml2-dev
+            -d libyajl-dev
+            -d linux-libc-dev
+            -d default-jdk
+            -d protobuf-c-compiler
+            -d python-dev
+            -m mahmoud@balancedpayments.com
+            --version '5.4.1-0balanced'
+            --provides balanced-collectd
+            --vendor dev@balancedpayments.com
+            --license MIT/BSD
+            --url 'https://github.com/balanced-ops/bakery'
+            --description 'Balanced collectd daemon'
+            /opt/collectd

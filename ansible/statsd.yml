@@ -61,7 +61,7 @@
             -n balanced-statsd-relayer
             -m mahmoud@balancedpayments.com
             -d 'nodejs >= 0.10.0'
-            --version '1.0.0'
+            --version '1.0'
             --provides balanced-statsd-relayer
             --vendor dev@balancedpayments.com
             --license MIT/BSD

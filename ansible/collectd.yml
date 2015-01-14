@@ -3,7 +3,7 @@
   sudo: yes
   vars:
     collectd_git_repo: https://github.com/collectd/collectd.git
-    collectd_version: 7af18f5f02114f39f6c546447e9bf05adf009b00
+    collectd_version: 3ed71d2774fcacdf0c88b3a6d81bd826a6893b32
 
   pre_tasks:
     - name: Ubuntu | Install dependencies
@@ -45,7 +45,7 @@
       when: ansible_os_family == 'Debian'
       apt: name="{{ item }}" state=present
       with_items:
-        - javahelper   # really?
+        - javahelper
         - default-jdk
         - gcj-jdk
         - linux-libc-dev
@@ -85,6 +85,15 @@
         - libprotobuf-c0-dev
         - libvarnishapi-dev
 
+    - name: Checkout librdkafka
+      git:
+        repo: https://github.com/edenhill/librdkafka.git
+        dest: "/tmp/librdkafka"
+        version: 3fca155e6468bac5df2203c39e3c9b68935e2cbd
+
+    - name: Configure librdkafka
+      shell: ./configure chdir=/tmp/librdkafka && make && make install
+
     - name: Checkout collectd source
       git:
         repo: "{{ collectd_git_repo }}"
@@ -100,30 +109,29 @@
                     --disable-static        \
                     --without-listatgrab    \
                     --without-libhal        \
-                    --without-included-ltdl \
-                    --disable-apple_sensors \
-                    --enable-all-plugins    \
-                    --disable-aquaero       \
-                    --disable-barometer       \
-                    --disable-ipmi       \
-                    --disable-lpar \
-                    --disable-mic \
-                    --disable-mic \
-                    --disable-tape \
-                    --disable-netapp \
-                    --disable-nut \
-                    --disable-oracle \
-                    --disable-pf \
-                    --disable-routeros \
-                    --disable-sigrok \
-                    --disable-smart \
-                    --disable-snmp  \
-                    --disable-write_kafka \
-                    --disable-write_mongodb \
-                    --disable-xmms \
-                    --with-libperl=/usr/lib/  \
-                    --with-liblvm2app=/usr/lib/ \
-                    --with-perl-bindings='INSTALLDIRS=vendor'
+                    --without-included-ltdl
+#                    --enable-all-plugins    \
+#                    --disable-aquaero       \
+#                    --disable-barometer       \
+#                    --disable-ipmi       \
+#                    --disable-lpar \
+#                    --disable-mic \
+#                    --disable-mic \
+#                    --disable-tape \
+#                    --disable-netapp \
+#                    --disable-nut \
+#                    --disable-oracle \
+#                    --disable-pf \
+#                    --disable-routeros \
+#                    --disable-sigrok \
+#                    --disable-smart \
+#                    --disable-snmp  \
+#                    --disable-write_kafka \
+#                    --disable-write_mongodb \
+#                    --disable-xmms \
+#                    --with-libperl=/usr/lib/  \
+#                    --with-liblvm2app=/usr/lib/ \
+#                    --with-perl-bindings='INSTALLDIRS=vendor'
       args:
         chdir: /tmp/collectd
 
@@ -141,41 +149,19 @@
         fpm -s dir -t deb
             -p /vagrant/packages
             -n balanced-collectd
-            -d flex
-            -d autotools-dev
-            -d libltdl-dev
-            -d pkg-config
-            -d iptables-dev
-            -d javahelper
             -d libcurl4-gnutls-dev
-            -d libdbi-dev
             -d libesmtp-dev
-            -d libganglia1-dev
             -d libgcrypt11-dev
             -d libglib2.0-dev
-            -d liblvm2-dev
-            -d libmemcached-dev
-            -d libmodbus-dev
             -d libmnl-dev
-            -d libmysqlclient-dev
             -d libnotify-dev
-            -d libopenipmi-dev
-            -d liboping-dev
-            -d libow-dev
             -d libpcap-dev
-            -d libperl-dev
             -d libpq-dev
             -d librabbitmq-dev
-            -d librrd-dev
             -d libsensors4-dev
-            -d libtokyocabinet-dev
-            -d libtokyotyrant-dev
             -d libvirt-dev
             -d libxml2-dev
             -d libyajl-dev
-            -d linux-libc-dev
-            -d default-jdk
-            -d protobuf-c-compiler
             -d python-dev
             -m mahmoud@balancedpayments.com
             --version '5.4.1-0balanced'

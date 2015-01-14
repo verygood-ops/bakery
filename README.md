@@ -1,5 +1,7 @@
 # Bakery
 
+ [![Build Status](https://travis-ci.org/balanced-ops/bakery.svg?branch=master)](https://travis-ci.org/balanced-ops/bakery)
+
 Uses fpm to bake packages (i.e. debian)
 
 ## Supported

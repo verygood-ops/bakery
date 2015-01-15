@@ -1,5 +1,0 @@
----
-
-- include: statsd.yml
-  when: statsd_enabled
-  tags: [statsd]

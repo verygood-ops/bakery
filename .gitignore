@@ -57,4 +57,4 @@ target/
 *.deb
 
 # remove roles
-ansible/roles/
+ansible-bakery/roles/

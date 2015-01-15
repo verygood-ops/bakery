@@ -16,23 +16,9 @@
           maxConnections: 10
           host: "internal-metrics.vandelay.io"
           port: 8125
-  pre_tasks:
-    - name: Ubuntu | Install dependencies
-      when: ansible_os_family == 'Debian'
-      apt: name="{{ item }}" state=present update_cache=yes cache_valid_time=1200
-      with_items:
-        - git-core
-        - curl
-        - build-essential
-        - openssl
-        - libssl-dev
-        - ruby-dev
-        - gcc
-
-    - name: Install fpm gem
-      gem: name=fpm state=present user_install=no
 
   roles:
+    - '../ansible-bakery'
     - statsd
 
   tasks:

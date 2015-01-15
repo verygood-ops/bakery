@@ -1,0 +1,15 @@
+---
+# enable the bakery default role
+bakery_role_enabled: true
+
+# docker support
+docker_host_ip: 0.0.0.0
+docker_host_port: 2375
+docker_version: 1.4.0
+
+## exposes docker to host
+expose_docker_host: true
+## squash version
+squash_version: v0.0.11
+squash_file: "docker-squash-linux-amd64-{{ squash_version }}.tar.gz"
+squash_url: "https://github.com/jwilder/docker-squash/releases/download/{{ squash_version }}/{{ squash_file }}"

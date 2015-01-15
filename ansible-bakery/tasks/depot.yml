@@ -1,0 +1,31 @@
+---
+- name: Ubuntu | Install depot python / gnupg dependencies
+  when: ansible_os_family == 'Debian'
+  apt: name={{ item }} state=latest
+  with_items:
+    - gnupg
+    - ca-certificates
+    - python-pip
+    - python-crypto
+    - libxml2-dev
+    - libxslt1-dev
+    - python-dev
+
+- name: Update CA Certificates
+  when: ansible_os_family == 'Debian'
+  shell: update-ca-certificates
+
+- name: Install depot
+  pip: name=depot state=present
+
+- name: List keys
+  sudo: no
+  sudo_user: vagrant
+  shell: gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 277E7787
+
+# is this necessary?
+- name: Add s3 apt repo with embedded s3 credentials
+  apt_repository: >-
+    repo='deb [arch=amd64,all] s3://{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}:[{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}]@s3.amazonaws.com/apt.vandelay.io precise main'
+    update_cache=yes
+    state=present

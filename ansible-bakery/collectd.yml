@@ -5,22 +5,8 @@
     collectd_git_repo: https://github.com/collectd/collectd.git
     collectd_revision: 3ed71d2774fcacdf0c88b3a6d81bd826a6893b32
     collectd_version: 5.4.1
-  pre_tasks:
-    - name: Ubuntu | Install dependencies
-      when: ansible_os_family == 'Debian'
-      apt: name="{{ item }}" state=present update_cache=yes cache_valid_time=86400
-      with_items:
-        - git-core
-        - curl
-        - build-essential
-        - openssl
-        - libssl-dev
-        - ruby-dev
-        - gcc
-
-    - name: Install fpm gem
-      gem: name=fpm state=present user_install=no
-
+  roles:
+    - '../ansible-bakery'
   tasks:
 
     - meta: flush_handlers

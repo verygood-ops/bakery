@@ -1,0 +1,79 @@
+---
+# somewhat taken from: https://github.com/bryfry/ansible-docker/blob/master/docker.yml
+
+- name: Ubuntu | Adding Docker repository key
+  apt_key: >
+    url="https://get.docker.io/gpg" id="A88D21E9" state=present
+  when: ansible_os_family == 'Debian'
+
+- name: Ubuntu | Adding Docker repository
+  apt_repository: >
+    repo='deb http://get.docker.io/ubuntu docker main'
+    update_cache=yes
+    state=present
+  when: ansible_os_family == 'Debian'
+
+- name: Ubuntu | Installing Docker and Dependencies
+  apt: name="{{ item }}" state=present
+  with_items:
+    - apt-transport-https
+    - "lxc-docker-{{ docker_version }}"
+    - python-pip
+  when: ansible_os_family == 'Debian'
+
+- name: Ubuntu | Expose docker host
+  lineinfile: >
+    dest=/etc/default/docker
+    regexp="^DOCKER_OPTS"
+    line='DOCKER_OPTS="-H unix:///var/run/docker.sock -H tcp://{{ docker_host_ip }}:{{ docker_host_port }}"'
+  when: expose_docker_host
+  when: ansible_os_family == 'Debian'
+
+- name: Installing docker-py for ansible docker module
+  pip: name=docker-py==0.5.3 state=present
+
+- name: Restart docker service / daemon
+  service: name=docker state=restarted
+
+- name: Adding vagrant user to docker group
+  user: name=vagrant append=yes groups=docker state=present
+
+- name: regather facts
+  action: setup
+
+- name: Route traffic locally to docker
+  sudo: true
+  sudo_user: "{{ local_user }}"
+  shell: sudo route -nv add -net {{ ansible_docker0.ipv4.address }}/16 {{ local_bridge_network }}
+  delegate_to: 127.0.0.1
+  when: expose_docker_host
+
+- name: upgrade tar if not at least 1.2.7
+  shell: tar --version | head -1 | cut -d ' ' -f 4
+  register: tar_version
+
+- name: update tar if tar is less than 1.27
+  get_url: url=http://ftp.gnu.org/gnu/tar/tar-1.28.tar.gz dest=/tmp/
+  sudo: no
+  when: tar_version.stdout < '1.27'
+
+- name: explode tar file
+  shell: tar xzvf tar-1.28.tar.gz chdir=/tmp
+  sudo: no
+  when: tar_version.stdout < '1.27'
+
+- name: configure, make and make install
+  shell: ./configure --prefix=/usr && make chdir=/tmp/tar-1.28/
+  sudo: no
+  when: tar_version.stdout < '1.27'
+
+- name: configure, make and make install
+  shell: make install chdir=/tmp/tar-1.28/
+  sudo: yes
+  when: tar_version.stdout < '1.27'
+
+- name: download docker-squash
+  get_url: url={{ squash_url }} dest=/tmp mode=0644
+
+- name: unpack docker-squash
+  unarchive: src=/tmp/{{ squash_file }} dest=/usr/local/bin copy=no

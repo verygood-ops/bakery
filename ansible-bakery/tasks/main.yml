@@ -1,0 +1,10 @@
+---
+
+- include: common.yml
+  when: bakery_role_enabled
+
+- include: depot.yml
+  when: bakery_role_enabled
+
+- include: docker-host.yml
+  when: bakery_role_enabled

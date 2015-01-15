@@ -1,0 +1,35 @@
+---
+- hosts: all
+  sudo: yes
+  roles:
+    - '../ansible-bakery'
+
+  tasks:
+
+    - name: depot publish to unstable
+      when: publish_destination == 'unstable'
+      sudo: no
+      shell: |
+        depot -s s3://apt.vandelay.io       \
+              -c precise                    \
+              -k 277E7787                   \
+              --no-public                   \
+              --component=unstable          \
+              /vagrant/packages/{{ package_cmd }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+
+    - name: depot publish to main
+      sudo: no
+      when: publish_destination == 'main'
+      shell: |
+        depot -s s3://apt.vandelay.io       \
+              -c precise                    \
+              -k 277E7787                   \
+              --no-public                   \
+              --component=main              \
+              /vagrant/packages/{{ package_cmd }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"

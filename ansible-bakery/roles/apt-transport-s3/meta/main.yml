@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Mahmoud Abdelkader
+  description: >
+    An Ansible playbook that installs apt-transport-s3 (IAM Role/S3 Creds)
+  company: Balanced
+  license: MIT
+  min_ansible_version: 1.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - precise
+  categories:
+    - system
+
+dependencies: []

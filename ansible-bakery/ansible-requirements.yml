@@ -3,3 +3,6 @@
 - src: https://github.com/balanced-ops/Stouts.statsd.git
   version: eb3d7acc524402dd1689f97c5ebac830f11f663a
   name: statsd
+
+- src: https://github.com/balanced-ops/ansible-apt-transport-s3.git
+  name: apt-transport-s3

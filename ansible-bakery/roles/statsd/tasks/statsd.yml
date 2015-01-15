@@ -1,0 +1,50 @@
+---
+
+- name: Prepare Statsd directory
+  file: state=directory path={{statsd_home}}
+
+- name: Is statsd already installed?
+  shell: npm -j ls "{{ statsd_npm_package_name }}"
+  args:
+    chdir: "{{statsd_home}}"
+  ignore_errors: true
+  register: statsd_version
+
+- name: Install statsd with version
+  npm: >
+    name={{statsd_npm_package_name}}
+    path={{statsd_home}}
+    version={{statsd_npm_package_version}}
+  when: statsd_npm_package_version
+
+- name: Install statsd
+  npm: >
+    name={{statsd_npm_package_name}}
+    path={{statsd_home}}
+  when: not statsd_npm_package_version and (statsd_version | failed)
+
+- name: Apply TCP repeater patch
+  copy:
+    src: "{{ item }}"
+    dest: "{{ statsd_home }}/node_modules/statsd/backends/{{ item }}"
+  with_items:
+    - "repeater.js"
+    - "repeaterTcp.js"
+  when: statsd_support_tcp_repeater
+
+- name: Install TCP repeater dependencies
+  npm: name="generic-pool@2.1.1" path="{{statsd_home}}"
+  when: statsd_support_tcp_repeater
+
+- name: Configure upstart
+  template: src=upstart.conf.j2 dest=/etc/init/statsd.conf
+  notify:
+  - statsd restart
+
+- name: Configure statsd
+  template: src=statsd.js.j2 dest={{statsd_home}}/config.js
+  notify:
+  - statsd restart
+
+- name: Ensure that Statsd is started
+  service: name=statsd state=started enabled=yes

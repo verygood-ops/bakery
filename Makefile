@@ -5,10 +5,11 @@ DEST?=
 .PHONY: test-%
 
 test-%:
-	env COPY_EXTENDED_ATTRIBUTES_DISABLE=true \
-	tar cvf tests/$*/$*.tar packages/*${*}*.deb && \
-	cd tests/$* && \
-	docker build -t test-$* --rm=false .
+	if [ ! -f tests/${*}/${*}.tar ]; then            \
+	 env COPY_EXTENDED_ATTRIBUTES_DISABLE=true       \
+	   tar cvf tests/$*/$*.tar packages/*${*}*.deb;  \
+	fi
+	cd tests/$* && docker build -t test-$* --rm=false .
 
 
 # base:

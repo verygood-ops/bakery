@@ -48,6 +48,8 @@ Vagrant.configure(2) do |config|
       # The --nicpromisc2 translates to Promiscuous mode for nic2, where nic2 -> eth1.
       # So --nocpromisc3 would change that setting for eth2, etc.
        vb.customize ['modifyvm', :id, '--nicpromisc2', 'allow-all']
+       vb.memory = 2048
+       vb.cpus = 2
     end
 
     if ENV['PLAY']

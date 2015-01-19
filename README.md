@@ -26,6 +26,10 @@ Will execute `ansible-bakery/${PLAY}.yml`.
 
 Docker support is enabled for easy testing of your debian packages.
 
+## Testing Your Baked Images
+
+To test how your baked images, a really great way to do so is to use Docker. 
+
 ## Deploying your debian package
 
 **Requires Vagrant 1.7.1+**

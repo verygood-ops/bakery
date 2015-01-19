@@ -55,6 +55,7 @@ target/
 
 # packages
 *.deb
+tests/*/*.tar
 
 # remove roles
 ansible-bakery/roles/

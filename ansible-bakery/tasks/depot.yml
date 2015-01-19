@@ -23,6 +23,11 @@
   sudo_user: vagrant
   shell: gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 277E7787
 
+- name: Add-key
+  sudo: no
+  sudo_user: vagrant
+  shell: gpg --export --armor 277E7787 | sudo apt-key add -
+
 # is this necessary?
 - name: Add s3 apt repo with embedded s3 credentials
   apt_repository: >-
